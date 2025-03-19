@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { generateId } from "@/utils/financeUtils";
 import { Income } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,14 +9,15 @@ import { PlusCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface IncomeFormProps {
-  onAddIncome: (income: Income) => void;
+  onAddIncome: (income: Omit<Income, 'id'>) => void;
 }
 
 const IncomeForm = ({ onAddIncome }: IncomeFormProps) => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!description.trim()) {
@@ -31,19 +31,26 @@ const IncomeForm = ({ onAddIncome }: IncomeFormProps) => {
       return;
     }
 
-    const newIncome: Income = {
-      id: generateId(),
-      description: description.trim(),
-      amount: numAmount,
-      date: new Date(),
-    };
+    setLoading(true);
 
-    onAddIncome(newIncome);
-    toast.success("Receita adicionada com sucesso!");
-    
-    // Clear the form
-    setDescription("");
-    setAmount("");
+    try {
+      const newIncome = {
+        description: description.trim(),
+        amount: numAmount,
+        date: new Date(),
+        month: new Date().toISOString().slice(0, 7) // YYYY-MM format
+      };
+
+      await onAddIncome(newIncome);
+      
+      // Clear the form
+      setDescription("");
+      setAmount("");
+    } catch (error) {
+      console.error("Erro ao adicionar receita:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -83,9 +90,10 @@ const IncomeForm = ({ onAddIncome }: IncomeFormProps) => {
       <Button 
         type="submit" 
         className="w-full h-12 bg-income hover:bg-income/90 text-income-foreground gap-2"
+        disabled={loading}
       >
         <PlusCircle size={18} />
-        Adicionar Receita
+        {loading ? "Adicionando..." : "Adicionar Receita"}
       </Button>
     </motion.form>
   );

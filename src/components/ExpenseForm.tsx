@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { generateId } from "@/utils/financeUtils";
 import { CATEGORIES, Expense, TransactionCategory } from "@/types/finance";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,15 +16,16 @@ import { MinusCircle } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface ExpenseFormProps {
-  onAddExpense: (expense: Expense) => void;
+  onAddExpense: (expense: Omit<Expense, 'id'>) => void;
 }
 
 const ExpenseForm = ({ onAddExpense }: ExpenseFormProps) => {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<TransactionCategory>("Food");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!description.trim()) {
@@ -39,20 +39,27 @@ const ExpenseForm = ({ onAddExpense }: ExpenseFormProps) => {
       return;
     }
 
-    const newExpense: Expense = {
-      id: generateId(),
-      description: description.trim(),
-      amount: numAmount,
-      category,
-      date: new Date(),
-    };
+    setLoading(true);
 
-    onAddExpense(newExpense);
-    toast.success("Despesa adicionada com sucesso!");
-    
-    // Clear the form
-    setDescription("");
-    setAmount("");
+    try {
+      const newExpense = {
+        description: description.trim(),
+        amount: numAmount,
+        category,
+        date: new Date(),
+        month: new Date().toISOString().slice(0, 7) // YYYY-MM format
+      };
+
+      await onAddExpense(newExpense);
+      
+      // Clear the form
+      setDescription("");
+      setAmount("");
+    } catch (error) {
+      console.error("Erro ao adicionar despesa:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -111,9 +118,10 @@ const ExpenseForm = ({ onAddExpense }: ExpenseFormProps) => {
       <Button 
         type="submit" 
         className="w-full h-12 bg-expense hover:bg-expense/90 text-expense-foreground gap-2"
+        disabled={loading}
       >
         <MinusCircle size={18} />
-        Adicionar Despesa
+        {loading ? "Adicionando..." : "Adicionar Despesa"}
       </Button>
     </motion.form>
   );

@@ -9,7 +9,8 @@ export type TransactionCategory =
   | 'Savings'
   | 'Personal'
   | 'Entertainment'
-  | 'Other';
+  | 'Other'
+  | 'Investment';
 
 export const CATEGORIES: TransactionCategory[] = [
   'Food',
@@ -21,6 +22,7 @@ export const CATEGORIES: TransactionCategory[] = [
   'Savings',
   'Personal',
   'Entertainment',
+  'Investment',
   'Other'
 ];
 
@@ -30,16 +32,31 @@ export interface Transaction {
   description: string;
   date: Date;
   category?: TransactionCategory;
+  month?: string; // Para rastreamento mensal (formato: 'YYYY-MM')
 }
 
-export interface Income extends Transaction {}
+export interface Income extends Transaction {
+  month: string; // Obrigatório para incomes
+}
 
 export interface Expense extends Transaction {
   category: TransactionCategory;
+  month: string; // Obrigatório para expenses
 }
 
 export interface Budget {
   id: string;
   category: TransactionCategory;
   amount: number;
+  month?: string; // Opcional para orçamentos mensais
+}
+
+export interface SavingsGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  category: 'Investment' | 'Savings';
+  deadline?: Date;
+  description?: string;
 }
