@@ -1,13 +1,12 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { Income, Expense, Budget } from '@/types/finance';
 
 // Chaves de ambiente do Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseUrl = 'https://pyytuwrzsvmvgvyudvpk.supabase.co';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 // Verificar se as chaves estão disponíveis
-const useLocalStorage = !supabaseUrl || !supabaseKey;
+const useLocalStorage = !supabaseKey;
 
 // Se as chaves não estiverem disponíveis, use localStorage para armazenamento temporário
 // Caso contrário, crie o cliente Supabase
@@ -15,7 +14,7 @@ export const supabase = useLocalStorage
   ? null 
   : createClient(supabaseUrl, supabaseKey);
 
-console.log(useLocalStorage ? "Usando localStorage temporário (Supabase não configurado)" : "Usando Supabase");
+console.log(useLocalStorage ? "Usando localStorage temporário (Chave Supabase não configurada)" : "Usando Supabase");
 
 // Função auxiliar para armazenamento local
 const getLocalData = (key: string, defaultValue: any = []) => {
